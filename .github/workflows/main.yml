@@ -31,29 +31,36 @@ jobs:
       - name: Check AUT Url
         run: curl ${{ env.URL }}
 
-      - name: Selenium Preparation
-        run: docker run --network=isolated -d -p 4444:4444 -p 7900:7900 -v /dev/shm:/dev/shm --name firefox-standalone selenium/standalone-firefox:latest
+      - name: Selenium Preparation (Firefox, Chrome, Edge)
+        run: |
+          docker run --network=isolated -d -p 4444:4444 -p 7900:7900 -v /dev/shm:/dev/shm --name firefox-standalone selenium/standalone-firefox:latest
+          docker run --network=isolated -d -p 4445:4444 -p 7901:7900 -v /dev/shm:/dev/shm --name chrome-standalone selenium/standalone-chrome:latest
+          docker run --network=isolated -d -p 4446:4444 -p 7902:7900 -v /dev/shm:/dev/shm --name edge-standalone selenium/standalone-edge:latest
 
       - name: Wait for Selenium Hub
         run: sh wait.sh
 
-      - name: Check the Hub
-        run: curl http://localhost:4444/ui
+      - name: Check Selenium Hub
+        run: |
+          curl http://localhost:4444/ui
+          curl http://localhost:4445/ui
+          curl http://localhost:4446/ui
 
-        
       - name: Install Selenium client
         run: pip install -U selenium
 
-      - name: Run test
+      - name: Run test in parallel
         run: python tests/hello_aut.py ${{ env.URL }}
-      
-      - name: 'Upload Artifact'
+
+      - name: Upload Screenshots
         uses: actions/upload-artifact@v4
         with:
-          name: Screenshot
-          path: screenshot.png
+          name: Screenshots
+          path: screenshot_*.png
 
-        
-
-      - name: stop docker
-        run: docker stop docker-apache
+      - name: Stop Docker Containers
+        run: |
+          docker stop docker-apache
+          docker stop firefox-standalone
+          docker stop chrome-standalone
+          docker stop edge-standalone
