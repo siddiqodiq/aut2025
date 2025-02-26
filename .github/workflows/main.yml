@@ -45,10 +45,24 @@ jobs:
           fi
 
       - name: Wait for Selenium Hub
-        run: sh wait.sh
+        run: |
+          if [ "${{ matrix.browser }}" == "firefox" ]; then
+            sh wait.sh 4444
+          elif [ "${{ matrix.browser }}" == "chrome" ]; then
+            sh wait.sh 4445
+          elif [ "${{ matrix.browser }}" == "edge" ]; then
+            sh wait.sh 4446
+          fi
 
       - name: Check the Hub
-        run: curl http://localhost:4444/ui
+        run: |
+          if [ "${{ matrix.browser }}" == "firefox" ]; then
+            curl http://localhost:4444/ui
+          elif [ "${{ matrix.browser }}" == "chrome" ]; then
+            curl http://localhost:4445/ui
+          elif [ "${{ matrix.browser }}" == "edge" ]; then
+            curl http://localhost:4446/ui
+          fi
 
       - name: Install Selenium client
         run: pip install -U selenium
