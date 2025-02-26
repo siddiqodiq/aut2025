@@ -10,6 +10,9 @@ jobs:
     name: Functional Test
     permissions: write-all
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        browser: [firefox, chrome, edge]
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v4
@@ -49,8 +52,8 @@ jobs:
       - name: Install Selenium client
         run: pip install -U selenium
 
-      - name: Run tests
-        run: python tests/hello_aut.py ${{ env.URL }}
+      - name: Run tests on ${{ matrix.browser }}
+        run: python tests/hello_aut.py ${{ matrix.browser }} ${{ env.URL }}
 
       - name: Upload Screenshots
         uses: actions/upload-artifact@v4
