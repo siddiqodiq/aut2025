@@ -49,11 +49,8 @@ jobs:
       - name: Install Selenium client
         run: pip install -U selenium
 
-      - name: Run tests for all browsers
-        run: |
-          python tests/hello_aut.py ${{ env.URL }} --browser firefox
-          python tests/hello_aut.py ${{ env.URL }} --browser chrome
-          python tests/hello_aut.py ${{ env.URL }} --browser edge
+      - name: Run tests
+        run: python tests/hello_aut.py ${{ env.URL }}
 
       - name: Upload Screenshots
         uses: actions/upload-artifact@v4
