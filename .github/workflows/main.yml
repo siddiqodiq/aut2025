@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        browser: [firefox, chrome, edge]
+        browser: [firefox, chrome, edge]  # Daftar browser yang akan diuji
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v4
@@ -37,31 +37,31 @@ jobs:
       - name: Selenium Preparation (${{ matrix.browser }})
         run: |
           if [ "${{ matrix.browser }}" == "firefox" ]; then
-            docker run --network=isolated -d -p 4444:4444 -p 7900:7900 -v /dev/shm:/dev/shm --name selenium-standalone selenium/standalone-${{ matrix.browser }}:latest
+            docker run --network=isolated -d -p 4444:4444 -p 7900:7900 -v /dev/shm:/dev/shm --name selenium-firefox selenium/standalone-firefox:latest
           elif [ "${{ matrix.browser }}" == "chrome" ]; then
-            docker run --network=isolated -d -p 4445:4444 -p 7901:7900 -v /dev/shm:/dev/shm --name selenium-standalone selenium/standalone-${{ matrix.browser }}:latest
+            docker run --network=isolated -d -p 4445:4444 -p 7901:7900 -v /dev/shm:/dev/shm --name selenium-chrome selenium/standalone-chrome:latest
           elif [ "${{ matrix.browser }}" == "edge" ]; then
-            docker run --network=isolated -d -p 4446:4444 -p 7902:7900 -v /dev/shm:/dev/shm --name selenium-standalone selenium/standalone-${{ matrix.browser }}:latest
+            docker run --network=isolated -d -p 4446:4444 -p 7902:7900 -v /dev/shm:/dev/shm --name selenium-edge selenium/standalone-edge:latest
           fi
 
       - name: Wait for Selenium Hub
         run: |
           if [ "${{ matrix.browser }}" == "firefox" ]; then
-            sh wait.sh 4444
+            while ! curl -s http://localhost:4444/wd/hub/status | grep -q "ready"; do sleep 1; done
           elif [ "${{ matrix.browser }}" == "chrome" ]; then
-            sh wait.sh 4445
+            while ! curl -s http://localhost:4445/wd/hub/status | grep -q "ready"; do sleep 1; done
           elif [ "${{ matrix.browser }}" == "edge" ]; then
-            sh wait.sh 4446
+            while ! curl -s http://localhost:4446/wd/hub/status | grep -q "ready"; do sleep 1; done
           fi
 
       - name: Check the Hub
         run: |
           if [ "${{ matrix.browser }}" == "firefox" ]; then
-            curl http://localhost:4444/ui
+            curl http://localhost:4444/wd/hub/status
           elif [ "${{ matrix.browser }}" == "chrome" ]; then
-            curl http://localhost:4445/ui
+            curl http://localhost:4445/wd/hub/status
           elif [ "${{ matrix.browser }}" == "edge" ]; then
-            curl http://localhost:4446/ui
+            curl http://localhost:4446/wd/hub/status
           fi
 
       - name: Install Selenium client
@@ -79,4 +79,10 @@ jobs:
       - name: Stop Docker containers
         run: |
           docker stop docker-apache
-          docker stop selenium-standalone
+          if [ "${{ matrix.browser }}" == "firefox" ]; then
+            docker stop selenium-firefox
+          elif [ "${{ matrix.browser }}" == "chrome" ]; then
+            docker stop selenium-chrome
+          elif [ "${{ matrix.browser }}" == "edge" ]; then
+            docker stop selenium-edge
+          fi
