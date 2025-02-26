@@ -34,14 +34,15 @@ jobs:
       - name: Check AUT Url
         run: curl ${{ env.URL }}
 
-      - name: Selenium Preparation (Firefox)
-        run: docker run --network=isolated -d -p 4444:4444 -p 7900:7900 -v /dev/shm:/dev/shm --name firefox-standalone selenium/standalone-firefox:latest
-
-      - name: Selenium Preparation (Chrome)
-        run: docker run --network=isolated -d -p 4445:4444 -p 7901:7900 -v /dev/shm:/dev/shm --name chrome-standalone selenium/standalone-chrome:latest
-
-      - name: Selenium Preparation (Edge)
-        run: docker run --network=isolated -d -p 4446:4444 -p 7902:7900 -v /dev/shm:/dev/shm --name edge-standalone selenium/standalone-edge:latest
+      - name: Selenium Preparation (${{ matrix.browser }})
+        run: |
+          if [ "${{ matrix.browser }}" == "firefox" ]; then
+            docker run --network=isolated -d -p 4444:4444 -p 7900:7900 -v /dev/shm:/dev/shm --name selenium-standalone selenium/standalone-${{ matrix.browser }}:latest
+          elif [ "${{ matrix.browser }}" == "chrome" ]; then
+            docker run --network=isolated -d -p 4445:4444 -p 7901:7900 -v /dev/shm:/dev/shm --name selenium-standalone selenium/standalone-${{ matrix.browser }}:latest
+          elif [ "${{ matrix.browser }}" == "edge" ]; then
+            docker run --network=isolated -d -p 4446:4444 -p 7902:7900 -v /dev/shm:/dev/shm --name selenium-standalone selenium/standalone-${{ matrix.browser }}:latest
+          fi
 
       - name: Wait for Selenium Hub
         run: sh wait.sh
@@ -52,21 +53,16 @@ jobs:
       - name: Install Selenium client
         run: pip install -U selenium
 
-      - name: Run tests on ${{ matrix.browser }}
-        run: python tests/hello_aut.py ${{ matrix.browser }} ${{ env.URL }}
+      - name: Run tests
+        run: python tests/hello_aut.py ${{ env.URL }} ${{ matrix.browser }}
 
       - name: Upload Screenshots
         uses: actions/upload-artifact@v4
         with:
-          name: Screenshots
-          path: |
-            screenshot_firefox.png
-            screenshot_chrome.png
-            screenshot_edge.png
+          name: Screenshots-${{ matrix.browser }}
+          path: screenshot_${{ matrix.browser }}.png
 
       - name: Stop Docker containers
         run: |
           docker stop docker-apache
-          docker stop firefox-standalone
-          docker stop chrome-standalone
-          docker stop edge-standalone
+          docker stop selenium-standalone
