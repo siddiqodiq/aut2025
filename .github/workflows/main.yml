@@ -31,34 +31,40 @@ jobs:
       - name: Check AUT Url
         run: curl ${{ env.URL }}
 
-      - name: Selenium Preparation (Firefox, Chrome, Edge)
-        run: |
-          docker run --network=isolated -d -p 4444:4444 -p 7900:7900 -v /dev/shm:/dev/shm --name firefox-standalone selenium/standalone-firefox:latest
-          docker run --network=isolated -d -p 4445:4444 -p 7901:7900 -v /dev/shm:/dev/shm --name chrome-standalone selenium/standalone-chrome:latest
-          docker run --network=isolated -d -p 4446:4444 -p 7902:7900 -v /dev/shm:/dev/shm --name edge-standalone selenium/standalone-edge:latest
+      - name: Selenium Preparation (Firefox)
+        run: docker run --network=isolated -d -p 4444:4444 -p 7900:7900 -v /dev/shm:/dev/shm --name firefox-standalone selenium/standalone-firefox:latest
+
+      - name: Selenium Preparation (Chrome)
+        run: docker run --network=isolated -d -p 4445:4444 -p 7901:7900 -v /dev/shm:/dev/shm --name chrome-standalone selenium/standalone-chrome:latest
+
+      - name: Selenium Preparation (Edge)
+        run: docker run --network=isolated -d -p 4446:4444 -p 7902:7900 -v /dev/shm:/dev/shm --name edge-standalone selenium/standalone-edge:latest
 
       - name: Wait for Selenium Hub
         run: sh wait.sh
 
-      - name: Check Selenium Hub
-        run: |
-          curl http://localhost:4444/ui
-          curl http://localhost:4445/ui
-          curl http://localhost:4446/ui
+      - name: Check the Hub
+        run: curl http://localhost:4444/ui
 
       - name: Install Selenium client
         run: pip install -U selenium
 
-      - name: Run test in parallel
-        run: python tests/hello_aut.py ${{ env.URL }}
+      - name: Run tests for all browsers
+        run: |
+          python tests/hello_aut.py ${{ env.URL }} --browser firefox
+          python tests/hello_aut.py ${{ env.URL }} --browser chrome
+          python tests/hello_aut.py ${{ env.URL }} --browser edge
 
       - name: Upload Screenshots
         uses: actions/upload-artifact@v4
         with:
           name: Screenshots
-          path: screenshot_*.png
+          path: |
+            screenshot_firefox.png
+            screenshot_chrome.png
+            screenshot_edge.png
 
-      - name: Stop Docker Containers
+      - name: Stop Docker containers
         run: |
           docker stop docker-apache
           docker stop firefox-standalone
