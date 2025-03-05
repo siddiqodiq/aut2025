@@ -72,11 +72,3 @@ jobs:
           args: >
             -Dsonar.organization=siddiqodiq
             -Dsonar.projectKey=siddiqodiq_aut2025
-
-      - name: Download SonarCloud Report
-        run: wget -O sonarcloud.sarif "https://sonarcloud.io/api/issues/search?componentKeys=siddiqodiq_aut2025&resolved=false&types=VULNERABILITY,BUG,CODE_SMELL&format=sarif"
-          
-      - name: Upload SARIF Report to GitHub
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: sonarcloud.sarif
