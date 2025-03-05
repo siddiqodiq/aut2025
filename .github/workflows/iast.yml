@@ -61,13 +61,15 @@ jobs:
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
+      - name: Debug Environment Variables
+        run: env | sort
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up SonarCloud Scanner
         uses: SonarSource/sonarcloud-github-action@master
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: 73b64fe57b47a5743ba9da4e5139f05f792e46b9
         with:
           args: >
             -Dsonar.organization= siddiqodiq_aut2025
