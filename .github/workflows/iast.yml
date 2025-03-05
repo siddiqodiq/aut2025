@@ -35,7 +35,7 @@ jobs:
         uses: hermanka/action-full-scan@master
         with:
           target: ${{ env.URL }}
-          network_name: isolated
+          network_name: zap-isolated
 
       - name: Stop Docker
         run: docker stop docker-apache
