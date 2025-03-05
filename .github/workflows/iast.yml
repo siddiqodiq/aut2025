@@ -72,5 +72,5 @@ jobs:
           SONAR_TOKEN: 73b64fe57b47a5743ba9da4e5139f05f792e46b9
         with:
           args: >
-            -Dsonar.organization=siddiqodiq_aut2025
-            -Dsonar.projectKey=siddiqodiq
+            -Dsonar.organization=siddiqodiq
+            -Dsonar.projectKey=siddiqodiq_aut2025
